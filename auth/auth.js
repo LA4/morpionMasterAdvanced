@@ -33,7 +33,7 @@ router.get('/login/google', async (req, res) => {
     const {data, error} = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.SUPABASE_URL}/auth/v1/callback`
+            redirectTo: `http://localhost:3000/callback.html`
         }
     });
 
@@ -57,7 +57,7 @@ router.get('/callback', async (req, res) => {
             return res.redirect('/login?error=auth_failed');
         }
 
-        return res.redirect('/');
+        return res.redirect('../public/callback.html');
     }
 
     res.redirect('/login');

@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static("."));
+app.use(express.static("public"));
 app.use(cors());
 app.use("/auth/v1", authRouter)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
