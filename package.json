@@ -19,7 +19,6 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
     "supabase": "^2.65.6"
   }
 }
