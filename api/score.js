@@ -66,9 +66,9 @@ router.post('/', verifyAuth, async (req, res) => {
             });
         }
         
-        if (typeof score !== 'number' || score < 0) {
+        if (!Number.isInteger(score) || score < 0) {
             return res.status(400).json({ 
-                error: 'Le score doit être un nombre positif.' 
+                error: 'Le score doit être un nombre entier positif.' 
             });
         }
 
