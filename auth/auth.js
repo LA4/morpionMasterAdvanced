@@ -62,4 +62,10 @@ router.get('/callback', async (req, res) => {
 
     res.redirect('/login');
 });
+
+router.get('/logout', async (req, res) => {
+    await supabase.auth.signOut();
+    res.redirect('/login');
+});
+
 export default router;
