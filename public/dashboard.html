@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Morpion Master</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .welcome-message {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .score-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .logout-btn {
+            background: #f1f3f4;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .logout-btn:hover {
+            background: #e8eaed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Chargement...</p>
+    </div>
+
+    <div id="content" class="container" style="display: none;">
+        <div class="header">
+            <div class="welcome-message">
+                Bienvenue <span class="user-name" id="userName">...</span> ! 👋
+            </div>
+            <div class="user-email" id="userEmail"></div>
+            <button class="logout-btn" onclick="handleLogout()">Se déconnecter</button>
+        </div>
+
+        <div class="card">
+            <h2>🎮 Soumettre votre score</h2>
+            
+            <div id="message" class="message"></div>
+            
+            <form class="score-form" id="scoreForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="score">Score obtenu :</label>
+                    <input 
+                        type="number" 
+                        id="score" 
+                        name="score" 
+                        required 
+                        min="0"
+                        placeholder="Entrez votre score"
+                    >
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    📤 Envoyer le score
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://tghojvpmxzoieycydtwj.supabase.co'
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnaG9qdnBteHpvaWV5Y3lkdHdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MTE0ODQsImV4cCI6MjA3NTQ4NzQ4NH0.eQQvEeMhL2erYHF_ZjuZ_OhfoFDa0BPo_-BIV1IfsWM'
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+        let currentUser = null;
+        let accessToken = null;
+
+        async function checkAuth() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession()
+
+                if (error) throw error
+
+                if (!session) {
+                    // Pas de session, rediriger vers la page de connexion
+                    window.location.href = '/login.html'
+                    return
+                }
+
+                // Session trouvée, afficher les infos
+                currentUser = session.user
+                accessToken = session.access_token
+
+                document.getElementById('userName').textContent = 
+                    currentUser.user_metadata?.full_name || 
+                    currentUser.email?.split('@')[0] || 
+                    'Utilisateur'
+                
+                document.getElementById('userEmail').textContent = currentUser.email || ''
+
+                // Masquer le loading et afficher le contenu
+                document.getElementById('loading').style.display = 'none'
+                document.getElementById('content').style.display = 'block'
+
+            } catch (err) {
+                console.error('Erreur lors de la vérification de l\'authentification:', err)
+                window.location.href = '/login.html'
+            }
+        }
+
+        window.handleSubmit = async function(event) {
+            event.preventDefault()
+            
+            const submitBtn = document.getElementById('submitBtn')
+            const messageDiv = document.getElementById('message')
+            const scoreInput = document.getElementById('score')
+            
+            // Désactiver le bouton
+            submitBtn.disabled = true
+            submitBtn.textContent = '⏳ Envoi en cours...'
+            
+            // Masquer les messages précédents
+            messageDiv.classList.remove('show', 'success', 'error')
+            
+            try {
+                const score = parseInt(scoreInput.value)
+                
+                const response = await fetch('http://localhost:3000/api/v1/scores', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ score })
+                })
+
+                const data = await response.json()
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur lors de l\'envoi du score')
+                }
+
+                // Succès
+                messageDiv.textContent = '✅ Score enregistré avec succès !'
+                messageDiv.classList.add('show', 'success')
+                
+                // Réinitialiser le formulaire
+                scoreInput.value = ''
+
+            } catch (err) {
+                console.error('Erreur:', err)
+                messageDiv.textContent = `❌ Erreur : ${err.message}`
+                messageDiv.classList.add('show', 'error')
+            } finally {
+                // Réactiver le bouton
+                submitBtn.disabled = false
+                submitBtn.textContent = '📤 Envoyer le score'
+            }
+        }
+
+        window.handleLogout = async function() {
+            try {
+                await supabase.auth.signOut()
+                window.location.href = '/login.html'
+            } catch (err) {
+                console.error('Erreur lors de la déconnexion:', err)
+            }
+        }
+
+        // Vérifier l'authentification au chargement
+        checkAuth()
+    </script>
+</body>
+</html>
