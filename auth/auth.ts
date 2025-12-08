@@ -1,12 +1,13 @@
 import express from 'express';
 import { supabase } from '../supabaseClient.js';
-
+import * as dotenv from 'dotenv';
+dotenv.config();
 const router = express.Router();
 router.get('/login/google', async (req, res) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `https://tghojvpmxzoieycydtwj.supabase.co/auth/v1/callback`
+            redirectTo: `${process.env.WEB_URL}/auth/v1/callback`
         }
     });
 
