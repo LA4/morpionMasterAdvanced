@@ -4,7 +4,8 @@ import { supabase } from "../supabaseClient.js";
 const scoreRouter = express.Router();
 
 scoreRouter.get("/scores", async (req, res) => {
-    /** @swagger
+    /** 
+    * @swagger
     * /scores:
     *   get:
     *     summary: Get all scores
@@ -57,7 +58,8 @@ scoreRouter.get("/scores", async (req, res) => {
     res.status(200).json({ message: "Data found", result: data });
 });
 scoreRouter.post("/", async (req, res) => {
-    /** @swagger
+    /** 
+    * @swagger
     * /scores:
     *   post:
     *     summary: Create a new score
@@ -136,7 +138,8 @@ scoreRouter.post("/", async (req, res) => {
     res.status(201).json(data);
 })
 scoreRouter.get('/scoreByUserId', async (req, res) => {
-    /**@swagger
+    /**
+     * @swagger
      *       get:
      *         summary: Get scores by user ID
      *         description: Retrieves all scores for a specific user.
@@ -205,7 +208,8 @@ scoreRouter.get('/scoreByUserId', async (req, res) => {
     res.status(200).json(data);
 })
 scoreRouter.get('/scoreByDate   ', async (req, res) => {
-    /**@swagger
+    /**
+     * @swagger
      *       get:
      *         summary: Get scores by date
      *         description: Retrieves all scores for a specific date.

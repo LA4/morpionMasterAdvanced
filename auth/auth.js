@@ -1,5 +1,5 @@
 import express from 'express';
-import {supabase} from '../supabaseClient.js';
+import { supabase } from '../supabaseClient.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -30,7 +30,7 @@ router.get('/login/google', async (req, res) => {
      *                 error:
      *                   type: string
      */
-    const {data, error} = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
             redirectTo: `http://localhost:3000/callback.html`
@@ -38,17 +38,17 @@ router.get('/login/google', async (req, res) => {
     });
 
     if (error) {
-        return res.status(400).json({error: error.message});
+        return res.status(400).json({ error: error.message });
     }
 
     res.redirect(data.url);
 });
 
 router.get('/callback', async (req, res) => {
-    const {access_token, refresh_token} = req.query;
+    const { access_token, refresh_token } = req.query;
 
     if (access_token) {
-        const {data, error} = await supabase.auth.setSession({
+        const { data, error } = await supabase.auth.setSession({
             access_token,
             refresh_token
         });
@@ -57,7 +57,7 @@ router.get('/callback', async (req, res) => {
             return res.redirect('/login?error=auth_failed');
         }
 
-        return res.redirect('../public/callback.html');
+        return res.redirect('api/user/v1/me');
     }
 
     res.redirect('/login');
