@@ -1,0 +1,43 @@
+```gitignore
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / output
+dist/
+build/
+out/
+lib/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# IDEs / editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Runtime
+pids/
+*.pid
+*.seed
+
+# Misc
+.cache/
+```
