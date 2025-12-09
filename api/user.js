@@ -32,8 +32,12 @@ userRouter.get("/me", async (req, res) => {
      *         description: Unauthorized, authentication token missing or invalid
      */
 
+    const token = req.cookies["sb-access-token"];
+    if (!token) {
+        return res.status(401).json({ error: "Authentication token missing." });
+    }
 
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await supabase.auth.getUser(token);
 
     if (error) {
         return res.status(401).json({ error: error.message });
@@ -47,7 +51,7 @@ userRouter.get("/me", async (req, res) => {
     res.status(200).json({
         id: user.id,
         email: user.email,
-        name: user.user_metadata?.full_name || user.email // Assuming name might be in user_metadata or fallback to email
+        name: user.user_metadata?.full_name || user.email
     });
 });
 export default userRouter;

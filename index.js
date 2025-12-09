@@ -4,12 +4,14 @@ import authRouter from "./auth/auth.js";
 import userRouter from "./api/user.js";
 import scoreRouter from "./api/score.js";
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const version = "v1";
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static("public"));
 app.use(cors());
 app.use(`/auth/v1`, authRouter)
