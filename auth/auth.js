@@ -33,8 +33,11 @@ router.get('/login/google', async (req, res) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `http://localhost:3000/callback.html`
-        }
+            redirectTo: `http://localhost:3000/auth/v1/callback`
+        }, queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+        },
     });
 
     if (error) {
@@ -45,22 +48,23 @@ router.get('/login/google', async (req, res) => {
 });
 
 router.get('/callback', async (req, res) => {
-    const { access_token, refresh_token } = req.query;
-
-    if (access_token) {
-        const { data, error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token
-        });
-
-        if (error) {
-            return res.redirect('/login?error=auth_failed');
-        }
-
-        return res.redirect('api/user/v1/me');
+    const { code } = req.query;
+    if (!code) {
+        return res.status(400).json({ error: "Aucun code fourni" });
     }
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    res.redirect('/login');
+    if (error) {
+        return res.redirect('/login?error=auth_failed');
+    }
+    const { access_token } = data.session;
+
+    res.cookie('sb-access-token', access_token, {
+        httpOnly: true,    // Empêche le vol de token par JS (XSS)
+        secure: false,     // Mettre 'true' si tu es en HTTPS (Production)
+        maxAge: 3600000    // Durée de vie (1 heure ici)
+    });
+    return res.redirect('/api/v1/user/me');
 });
 
 router.get('/logout', async (req, res) => {
