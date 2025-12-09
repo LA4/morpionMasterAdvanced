@@ -33,22 +33,17 @@ userRouter.get("/me", async (req, res) => {
      */
 
 
-    const token = req.headers.authorization?.split(" ")[1] || req.cookies['AMP_fe4beb374f']; // Assuming 'sb-access-token' is the cookie name for the JWT
-
-    if (!token) {
-        return res.status(401).json({ error: "No authentication token provided." });
-    }
-
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data, error } = await supabase.auth.getUser();
 
     if (error) {
         return res.status(401).json({ error: error.message });
     }
 
-    if (!user) {
+    if (!data || !data.user) {
         return res.status(401).json({ error: "User not found or not authenticated." });
     }
 
+    const user = data.user;
     res.status(200).json({
         id: user.id,
         email: user.email,
