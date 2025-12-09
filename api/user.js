@@ -32,22 +32,7 @@ userRouter.get("/me", async (req, res) => {
      *         description: Unauthorized, authentication token missing or invalid
      */
 
-    const token = req.cookies["sb-access-token"];
-    if (!token) {
-        return res.status(401).json({ error: "Authentication token missing." });
-    }
-
-    const { data, error } = await supabase.auth.getUser(token);
-
-    if (error) {
-        return res.status(401).json({ error: error.message });
-    }
-
-    if (!data || !data.user) {
-        return res.status(401).json({ error: "User not found or not authenticated." });
-    }
-
-    const user = data.user;
+    const user = req.user;
     res.status(200).json({
         id: user.id,
         email: user.email,

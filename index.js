@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use(express.static("public"));
 app.use(cors());
 app.use(`/auth/v1`, authRouter)
-app.use(`/api/${version}/user`, userRouter)
+app.use(`/api/${version}/user`, authMiddleware, userRouter)
 app.use(`/api/${version}/score`, scoreRouter)
 
 
