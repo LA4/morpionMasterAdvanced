@@ -2,141 +2,536 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Le Réflexe Flash</title>
+    <title>Reflex Shot - Le Duel de Réflexes</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        #header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #welcome-message {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        #connection-status {
+            font-weight: bold;
+        }
+
+        #btn-logout {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        #btn-logout:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+
+        #game-area {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        #game-area.clickable {
+            cursor: pointer;
+        }
+
+        #game-area.color-red {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        }
+
+        #game-area.color-green {
+            background: linear-gradient(135deg, #51cf66 0%, #38d9a9 100%);
+            cursor: pointer;
+        }
+
+        #instruction-text {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #game-area.color-red #instruction-text,
+        #game-area.color-green #instruction-text {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #round-info {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        #game-area.color-red #round-info,
+        #game-area.color-green #round-info {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        #players-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .player-score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .player-status {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .player-status.ready {
+            background: #51cf66;
+            color: white;
+        }
+
+        .player-status.waiting {
+            background: #ffd43b;
+            color: #333;
+        }
+
+        #btn-ready {
+            background: #51cf66;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        #btn-ready:hover:not(:disabled) {
+            background: #40c057;
+            transform: scale(1.05);
+        }
+
+        #btn-ready:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        #result-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .result-good {
+            background: #51cf66;
+            color: white;
+        }
+
+        .result-bad {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        #ranking {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        #ranking h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .rank-item.first {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        }
+
+        .rank-item.second {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+        }
+
+        .rank-item.third {
+            background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #btn-play-again {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        #btn-play-again:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
+    <div id="game-container">
+        <div id="header">
+            <div>
+                <h3 id="welcome-message">Bienvenue, Joueur !</h3>
+                <p>Connexion : <span id="connection-status" style="color:orange;">En attente...</span></p>
+            </div>
+            <button id="btn-logout">Déconnexion</button>
+        </div>
 
-    <div id="game-area">
-        <div id="instruction-text" style="font-size: 1.5em; text-align: center; margin-bottom: 20px;">En attente du cycle de jeu...</div>
-        <div id="player-name-display" class="player-info"></div>
-    </div>
+        <div id="players-area"></div>
 
-    <div id="profile-card" class="card ">
-        <h3 id="welcome-message">Bienvenue, Joueur !</h3>
-        <p>Statut du jeu : <span id="connection-status" style="color:orange;">Connexion WS...</span></p>
-        <button id="btn-logout" style="background: #ccc; color: #333;">Déconnexion</button>
+        <div id="game-area">
+            <div id="round-info">En attente des joueurs...</div>
+            <div id="instruction-text">Cliquez sur "Prêt" pour commencer</div>
+            <button id="btn-ready">PRÊT !</button>
+            <div id="result-message" class="hidden"></div>
+        </div>
+
+        <div id="ranking" class="hidden">
+            <h2>🏆 Classement Final</h2>
+            <div id="ranking-list"></div>
+            <button id="btn-play-again" onclick="location.reload()">Rejouer</button>
+        </div>
     </div>
 
     <script>
-        const API_URL = "http://10.15.2.246:3000";
+        // Configuration dynamique - sera récupérée du serveur
+        let WS_URL = null;
+        let SERVER_CONFIG = null;
 
         let ws = null;
+        let playerName = '';
+        let gameActive = false;
+        let canClick = false;
 
         // Éléments DOM
         const gameArea = document.getElementById('game-area');
-        const profileCard = document.getElementById('profile-card');
         const instructionText = document.getElementById('instruction-text');
-        const statusMessage = document.getElementById('status-message');
+        const roundInfo = document.getElementById('round-info');
         const welcomeMessage = document.getElementById('welcome-message');
         const connectionStatus = document.getElementById('connection-status');
+        const playersArea = document.getElementById('players-area');
+        const btnReady = document.getElementById('btn-ready');
+        const resultMessage = document.getElementById('result-message');
+        const ranking = document.getElementById('ranking');
+        const rankingList = document.getElementById('ranking-list');
 
-        // --- 2. Logique WebSocket Native (ws) ---
+        // --- Configuration du serveur ---
+        async function fetchServerConfig() {
+            try {
+                const response = await fetch('/api/config');
+                SERVER_CONFIG = await response.json();
+                WS_URL = SERVER_CONFIG.wsReflexUrl;
+                console.log('Configuration serveur récupérée:', SERVER_CONFIG);
+                return true;
+            } catch (error) {
+                console.error('Erreur lors de la récupération de la configuration:', error);
+                // Fallback en cas d'erreur
+                WS_URL = `ws://${window.location.hostname}:8081`;
+                return false;
+            }
+        }
 
+        // --- WebSocket Connection ---
         function connectWebSocket() {
-            // ws = new WebSocket(`ws://localhost:8080/?token=${accessToken}`);
-             ws = new WebSocket(`ws://10.15.2.246:8080`);
+            if (!WS_URL) {
+                console.error('URL WebSocket non définie. Configuration non chargée.');
+                return;
+            }
+
+            ws = new WebSocket(WS_URL);
 
             ws.onopen = () => {
                 connectionStatus.innerText = 'Connecté';
                 connectionStatus.style.color = 'green';
+
+                // Rejoindre la partie
+                ws.send(JSON.stringify({
+                    type: 'JOIN',
+                    playerName: playerName
+                }));
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-
-                if (data.type === 'GAME_STATUS') {
-                    handleGameStatus(data.payload);
-                } else if (data.type === 'RESULT') {
-                    handleResult(data.payload);
-                }
+                handleMessage(data);
             };
 
             ws.onclose = () => {
                 connectionStatus.innerText = 'Déconnecté';
                 connectionStatus.style.color = 'red';
-                // En production, il faudrait ajouter une logique de reconnexion ici
-                // ws.close();
             };
 
             ws.onerror = (err) => {
                 console.error("Erreur WS:", err);
                 connectionStatus.innerText = 'Erreur';
+                connectionStatus.style.color = 'red';
             };
         }
 
+        // --- Message Handling ---
+        function handleMessage(data) {
+            console.log('Message reçu:', data);
 
-        function handleGameStatus(status) {
-            gameArea.classList.remove('color-red', 'color-green');
-            statusMessage.classList.add('hidden');
+            switch (data.type) {
+                case 'CONNECTED':
+                    console.log(data.content);
+                    break;
 
-            if (status === 'red') {
-                gameArea.classList.add('color-red');
-                instructionText.innerText = 'En attente du signal vert...';
-                gameArea.onclick = null; // Désactive le clic
-            } else if (status === 'green') {
-                gameArea.classList.add('color-green');
-                instructionText.innerText = 'CLIQUEZ MAINTENANT !';
-                gameArea.onclick = sendClick; // Active le clic
+                case 'GAME_STATE':
+                    updatePlayersDisplay(data.payload.players);
+                    if (data.payload.gameActive) {
+                        roundInfo.textContent = `Round ${data.payload.currentRound} / ${data.payload.totalRounds}`;
+                    }
+                    break;
+
+                case 'PLAYER_JOINED':
+                    instructionText.textContent = `${data.payload.playerName} a rejoint ! (${data.payload.playerCount} joueur(s))`;
+                    break;
+
+                case 'PLAYER_LEFT':
+                    instructionText.textContent = `${data.payload.playerName} a quitté (${data.payload.playerCount} joueur(s))`;
+                    break;
+
+                case 'ROUND_START':
+                    gameActive = true;
+                    canClick = false;
+                    btnReady.classList.add('hidden');
+                    resultMessage.classList.add('hidden');
+                    gameArea.classList.remove('color-green', 'clickable');
+                    gameArea.classList.add('color-red');
+                    roundInfo.textContent = `Round ${data.payload.round}`;
+                    instructionText.textContent = 'Attendez le VERT...';
+                    break;
+
+                case 'COLOR_CHANGE':
+                    if (data.payload.color === 'green') {
+                        canClick = true;
+                        gameArea.classList.remove('color-red');
+                        gameArea.classList.add('color-green', 'clickable');
+                        instructionText.textContent = '🎯 CLIQUEZ MAINTENANT !';
+                    }
+                    break;
+
+                case 'EARLY_CLICK':
+                    canClick = false;
+                    showResult(data.payload.message, false);
+                    break;
+
+                case 'VALID_CLICK':
+                    canClick = false;
+                    gameArea.classList.remove('clickable');
+                    showResult(
+                        `⚡ ${data.payload.reactionTime}ms ! +${data.payload.points} points`,
+                        true
+                    );
+                    break;
+
+                case 'ROUND_END':
+                    gameArea.classList.remove('color-red', 'color-green', 'clickable');
+                    instructionText.textContent = 'Round terminé !';
+                    updatePlayersDisplay(data.payload.results.map(r => ({
+                        name: r.name,
+                        score: r.score,
+                        ready: true
+                    })));
+                    break;
+
+                case 'GAME_END':
+                    showFinalRanking(data.payload.ranking);
+                    break;
+
+                case 'GAME_CANCELLED':
+                    gameActive = false;
+                    instructionText.textContent = data.payload.message;
+                    btnReady.classList.remove('hidden');
+                    btnReady.disabled = false;
+                    gameArea.classList.remove('color-red', 'color-green', 'clickable');
+                    break;
             }
         }
 
-        function sendClick() {
-            if (ws && ws.readyState === ws.OPEN) {
-                // Envoi du signal de clic au serveur
-                ws.send(JSON.stringify({ type: 'PLAYER_CLICK' }));
+        // --- UI Functions ---
+        function updatePlayersDisplay(players) {
+            playersArea.innerHTML = '';
+            players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <h3>${player.name}</h3>
+                    <div class="player-score">${player.score || 0} pts</div>
+                    <div class="player-status ${player.ready ? 'ready' : 'waiting'}">
+                        ${player.ready ? '✓ Prêt' : 'En attente...'}
+                    </div>
+                `;
+                playersArea.appendChild(card);
+            });
+        }
 
-                // Désactive le clic immédiatement après le premier envoi
-                gameArea.onclick = null; 
+        function showResult(message, isGood) {
+            resultMessage.textContent = message;
+            resultMessage.className = isGood ? 'result-good' : 'result-bad';
+            resultMessage.classList.remove('hidden');
+        }
+
+        function showFinalRanking(rankingData) {
+            gameArea.classList.add('hidden');
+            ranking.classList.remove('hidden');
+
+            rankingList.innerHTML = '';
+            rankingData.forEach((player, index) => {
+                const rankClass = index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : '';
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+
+                const item = document.createElement('div');
+                item.className = `rank-item ${rankClass}`;
+                item.innerHTML = `
+                    <span style="font-size: 1.5em;">${medal} ${player.rank}. ${player.name}</span>
+                    <span style="font-size: 1.5em; font-weight: bold;">${player.score} pts</span>
+                `;
+                rankingList.appendChild(item);
+            });
+        }
+
+        // --- Event Listeners ---
+        btnReady.addEventListener('click', () => {
+            ws.send(JSON.stringify({ type: 'READY' }));
+            btnReady.disabled = true;
+            btnReady.textContent = 'En attente...';
+            instructionText.textContent = 'En attente des autres joueurs...';
+        });
+
+        gameArea.addEventListener('click', () => {
+            if (canClick && gameActive) {
+                ws.send(JSON.stringify({ type: 'CLICK' }));
             }
-        }
-
-        function handleResult(message) {
-            statusMessage.classList.remove('hidden');
-            statusMessage.innerText = message;
-            instructionText.innerText = 'Résultat reçu.';
-        }
-
-        // --- 4. Boutons ---
+        });
 
         document.getElementById('btn-logout').onclick = logout;
 
         function logout() {
-            // Supprimer le cookie
+            // Supprimer les cookies
             document.cookie = "sb-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user-name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             if (ws) {
                 ws.close();
             }
             window.location.href = '/login';
         }
 
-        // --- 1. Gestion Utilisateur ---
-        
-        async function getUserInfo() {
+        // --- User Info ---
+        function getUserInfo() {
             const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
-console.log(tokenCookie);
+
             if (!tokenCookie) {
-                 console.log("Pas de token, mode anonyme ou non connecté");
-                 return;
+                console.log("Pas de token, redirection vers login");
+                window.location.href = '/login';
+                return;
             }
 
             // Lecture du nom depuis le cookie 'user-name'
             const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
-            let playerName = 'Joueur';
-            
+
             if (nameCookie) {
                 playerName = decodeURIComponent(nameCookie.split('=')[1]);
+            } else {
+                playerName = 'Joueur';
             }
 
             welcomeMessage.innerText = `Bienvenue, ${playerName} !`;
-            const nameDisplay = document.getElementById('player-name-display');
-            if(nameDisplay) {
-                nameDisplay.innerText = playerName;
-            }
         }
 
-        getUserInfo();
-        connectWebSocket();
+        // --- Init ---
+        async function init() {
+            getUserInfo();
+            await fetchServerConfig();
+            connectWebSocket();
+        }
+
+        init();
 
     </script>
 </body>
