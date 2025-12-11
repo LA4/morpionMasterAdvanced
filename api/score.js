@@ -4,7 +4,6 @@ import { supabase } from "../supabaseClient.js";
 const scoreRouter = express.Router();
 
 scoreRouter.get("/", async (req, res) => {
-    console.log("📢 Requête reçue: GET /api/v1/scores");
     /** 
     * @swagger
     * /api/v1/scores:
@@ -45,21 +44,14 @@ scoreRouter.get("/", async (req, res) => {
     *                   type: string
     *                   example: Database error message.
     */
-
     const { data, error } = await supabase
         .from("scores")
         .select("value, created_at, profiles(full_name)")
         .order("created_at", { ascending: false });
 
-    console.log("Requête Supabase exécutée avec succès.");
-    console.log("Requête Supabase - Data:", data);
-    console.log("Requête Supabase - Error:", error);
-
     if (error) {
         return res.status(500).json({ error: error.message });
     }
-
-    console.log("Nombre de scores:", data ? data.length : 0);
 
     res.status(200).json(data);
 });
@@ -136,7 +128,7 @@ scoreRouter.get('/scoreByUserId', async (req, res) => {
     }
     res.status(200).json(data);
 })
-scoreRouter.get('/scoreByDate   ', async (req, res) => {
+scoreRouter.get('/scoreByDate', async (req, res) => {
     /**
      * @swagger
      * /api/v1/scoreByDate:

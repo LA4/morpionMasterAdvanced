@@ -28,8 +28,11 @@ adminRouter.get("/profiles", async (req, res) => {
      *                   name:
      *                     type: string
      *                     description: The user's name
+     *       500:
+     *       description: Internal server error
+     *
+     *
      */
-
     const { data: profiles, error } = await supabase.from('profiles').select('*');
 
     if (error) {

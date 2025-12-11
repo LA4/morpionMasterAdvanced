@@ -29,8 +29,40 @@ userRouter.get("/me", async (req, res) => {
      *                   description: The user's name
      *       401:
      *         description: Unauthorized, authentication token missing or invalid
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: Error message
+     *                   example: Unauthorized
+     *
+     *        400:
+     *         description: Bad Request, invalid request parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: Error message
+     *                   example: Bad Request
+     *                   500:
+     *                   description: Internal Server Error
+     *                   content:
+     *                   application/json:
+     *                   schema:
+     *                   type: object
+     *                   properties:
+     *                   error:
+     *                   type: string
+     *                   description: Error message
+     *                   example: Internal Server Error
+     *
      */
-
     const user = req.user;
     res.status(200).json({
         id: user.id,

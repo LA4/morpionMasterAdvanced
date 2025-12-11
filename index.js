@@ -44,9 +44,9 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-app.use(`/auth/v1`, authRouter)
+app.use(`/auth/${version}`, authRouter)
 app.use(`/api/${version}/user`, authMiddleware, userRouter)
-app.use(`/api/${version}/scores`, scoreRouter)
+app.use(`/api/${version}/scores`,authMiddleware, scoreRouter)
 app.use(`/api/${version}/admin`, authMiddleware, adminMiddleware, adminRouter)
 
 // Routes pour les pages HTML
