@@ -46,10 +46,12 @@ scoreRouter.get("/", async (req, res) => {
     *                   example: Database error message.
     */
 
-    const response = await supabase.from("scores").select("*");
-    const { data, error } = response;
-    console.log("Requête Supabase exécutée avec succès.", response);
+    const { data, error } = await supabase
+        .from("scores")
+        .select("value, created_at, profiles(full_name)")
+        .order("created_at", { ascending: false });
 
+    console.log("Requête Supabase exécutée avec succès.");
     console.log("Requête Supabase - Data:", data);
     console.log("Requête Supabase - Error:", error);
 
@@ -57,23 +59,11 @@ scoreRouter.get("/", async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 
-console.log("Nombre de scores:", data ? data.length : 0);
+    console.log("Nombre de scores:", data ? data.length : 0);
 
-res.status(200).json(data);
-
-
-    // const { data, error } = await supabase.from("scores").select("*");
-    //  console.log(data, data.length);
-    // if (error) {
-    //     return res.status(500).json({ error: error.message });
-    // }
-   
-    // if (!data || data.length === 0) {
-    //     return res.status(200).json({ message: "No data found", result: [] });
-    // }
-
-    // res.status(200).json({ message: "Data found", result: data });
+    res.status(200).json(data);
 });
+
 scoreRouter.get('/scoreByUserId', async (req, res) => {
     /**
      * @swagger
