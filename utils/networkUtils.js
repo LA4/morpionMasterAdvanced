@@ -29,35 +29,35 @@ export function getLocalIP() {
  * @param {string} host - Adresse IP de l'hôte
  */
 export function displayServerInfo(port, wsPortReflex, wsPortMorpion, host) {
-    console.log('\n╔════════════════════════════════════════════════════════════╗');
-    console.log('║           🎯 REFLEX SHOT - SERVEUR DÉMARRÉ 🎯            ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    // console.log('\n╔════════════════════════════════════════════════════════════╗');
+    // console.log('║           🎯 REFLEX SHOT - SERVEUR DÉMARRÉ 🎯            ║');
+    // console.log('╚════════════════════════════════════════════════════════════╝\n');
 
-    console.log('📡 ADRESSE IP DU SERVEUR :');
-    console.log(`   🌐 ${host}\n`);
+    // console.log('📡 ADRESSE IP DU SERVEUR :');
+    // console.log(`   🌐 ${host}\n`);
 
-    console.log('🔌 PORTS ACTIFS :');
-    console.log(`   ├─ HTTP/API    : ${port}`);
-    console.log(`   ├─ WS Reflex   : ${wsPortReflex}`);
-    console.log(`   └─ WS Morpion  : ${wsPortMorpion}\n`);
+    // console.log('🔌 PORTS ACTIFS :');
+    // console.log(`   ├─ HTTP/API    : ${port}`);
+    // console.log(`   ├─ WS Reflex   : ${wsPortReflex}`);
+    // console.log(`   └─ WS Morpion  : ${wsPortMorpion}\n`);
 
-    console.log('🌐 ACCÈS AU JEU :');
-    console.log(`   👉 http://${host}:${port}\n`);
+    // console.log('🌐 ACCÈS AU JEU :');
+    // console.log(`   👉 http://${host}:${port}\n`);
 
-    console.log('📄 AUTRES PAGES :');
-    console.log(`   ├─ Login : http://${host}:${port}/login`);
-    console.log(`   ├─ Test  : http://${host}:${port}/test`);
-    console.log(`   └─ API   : http://${host}:${port}/docs\n`);
+    // console.log('📄 AUTRES PAGES :');
+    // console.log(`   ├─ Login : http://${host}:${port}/login`);
+    // console.log(`   ├─ Test  : http://${host}:${port}/test`);
+    // console.log(`   └─ API   : http://${host}:${port}/docs\n`);
 
-    console.log('⚠️  CONFIGURATION SUPABASE :');
-    console.log('   Ajoutez cette URL de callback dans Supabase :');
-    console.log(`   👉 http://${host}:${port}/auth/v1/callback\n`);
+    // console.log('⚠️  CONFIGURATION SUPABASE :');
+    // console.log('   Ajoutez cette URL de callback dans Supabase :');
+    // console.log(`   👉 http://${host}:${port}/auth/v1/callback\n`);
 
-    console.log('📋 PARTAGER AUX JOUEURS :');
-    console.log(`   Donnez cette adresse aux autres joueurs :`);
-    console.log(`   👉 http://${host}:${port}\n`);
+    // console.log('📋 PARTAGER AUX JOUEURS :');
+    // console.log(`   Donnez cette adresse aux autres joueurs :`);
+    // console.log(`   👉 http://${host}:${port}\n`);
 
-    console.log('═══════════════════════════════════════════════════════════════\n');
+    // console.log('═══════════════════════════════════════════════════════════════\n');
 }
 
 /**

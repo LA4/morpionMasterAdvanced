@@ -2,10 +2,12 @@ import express from 'express';
 import { specs, swaggerUi } from "./swagger.js";
 import authRouter from "./auth/auth.js";
 import userRouter from "./api/user.js";
+import adminRouter from "./api/admin.js";
 import scoreRouter from "./api/score.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { authMiddleware } from "./middelware/authMiddelware.js";
+import { adminMiddleware } from "./middelware/adminMiddleware.js";
 import { getLocalIP, displayServerInfo } from "./utils/networkUtils.js";
 import * as dotenv from 'dotenv';
 
@@ -47,8 +49,10 @@ app.get('/api/config', (req, res) => {
 
 app.use(`/auth/v1`, authRouter)
 app.use(`/api/${version}/user`, authMiddleware, userRouter)
-app.use(`/api/${version}/score`, scoreRouter)
+app.use(`/api/${version}/scores`, scoreRouter)
+app.use(`/api/${version}/admin`, authMiddleware, adminMiddleware, adminRouter)
 
+// Routes pour les pages HTML
 
 app.get('/', (req, res) => {
     // Vérifier si l'utilisateur a un token
