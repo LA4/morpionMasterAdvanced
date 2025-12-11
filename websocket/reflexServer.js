@@ -1,7 +1,6 @@
-// reflexServer.js
 import {WebSocket, WebSocketServer} from 'ws'; // Notez l'import ES Module
 
-// État global du jeu
+// global state
 let gameState = {
     players: [],
     gameActive: false,
@@ -12,21 +11,17 @@ let gameState = {
     results: []
 };
 
-// Configuration
+// Configurate
 const MIN_WAIT_TIME = 2000;
 const MAX_WAIT_TIME = 3000;
 const ROUND_COUNT = 2;
 let currentRound = 0;
 
 export function startReflexServer(port, host) {
-    // Démarrage du serveur WS
+    // Run server
     const wss = new WebSocketServer({port: port, host: '0.0.0.0'});
 
-    console.log('\n╔════════════════════════════════════════════════════════════╗');
-    console.log(`║        🎮 SERVEUR WEBSOCKET REFLEX DÉMARRÉ : ${port} 🎮        ║`);
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
-
-    // --- Fonctions utilitaires ---
+    // --- Utility functions ---
     function broadcast(data) {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
@@ -87,7 +82,7 @@ export function startReflexServer(port, host) {
         const waitTime = Math.random() * (MAX_WAIT_TIME - MIN_WAIT_TIME) + MIN_WAIT_TIME;
 
         setTimeout(() => {
-            // Vérification si le jeu est toujours actif avant de passer au vert
+            // Check if the game is still active before switching to green
             if (!gameState.gameActive) return;
 
             gameState.roundActive = true;
@@ -112,10 +107,9 @@ export function startReflexServer(port, host) {
                     score: p.score
                 }
             ));
-console.log(ranking);
-        broadcast({type: 'GAME_END', payload: {ranking}});
 
-        // Réinitialisation de l'état du jeu
+        broadcast({type: 'GAME_END', payload: {ranking}});
+        // Reset game state
         currentRound = 0;
         gameState.players.forEach(p => {
             p.score = 0;
@@ -123,9 +117,9 @@ console.log(ranking);
         });
     }
 
-    // --- Gestion des connexions ---
+    // Connection handling
     wss.on("connection", (ws) => {
-        console.log("Un joueur s'est connecté au Reflex Shot");
+        console.log("A player has connected to Reflex Shot");
 
         ws.send(JSON.stringify({
             type: "CONNECTED",
@@ -165,7 +159,7 @@ console.log(ranking);
                             ws.player.ready = true;
                             broadcastGameState();
                             const allReady = gameState.players.every(p => p.ready);
-                            // Démarrer si au moins 1 joueur (pour test) ou 2 pour vrai jeu
+                            // Start if at least 1 player (for testing) or 2 for real game
                             if (allReady && gameState.players.length >= 1 && !gameState.gameActive) {
                                 gameState.gameActive = true;
                                 currentRound = 0;

@@ -14,10 +14,8 @@
     </div>
 
     <script>
-        // Utiliser l'URL du serveur actuel (dynamique)
         const API_URL = `${window.location.protocol}//${window.location.host}`;
 
-        // Check if already logged in
         const token = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
         if (token) {
             window.location.href = '/';

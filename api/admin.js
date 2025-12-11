@@ -9,6 +9,8 @@ adminRouter.get("/profiles", async (req, res) => {
      *   get:
      *     summary: Get all user profiles
      *     tags: [Admin]
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
      *         description: List of user profiles
@@ -28,13 +30,46 @@ adminRouter.get("/profiles", async (req, res) => {
      *                   name:
      *                     type: string
      *                     description: The user's name
+     *       401:
+     *         description: Unauthorized, admin access required
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   example: Unauthorized
+     *       404:
+     *         description: No profiles found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: No profiles found
      *       500:
-     *       description: Internal server error
-     *
-     *
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Internal server error
      */
-    const { data: profiles, error } = await supabase.from('profiles').select('*');
 
+    const { data: profiles, error } = await supabase.from('profiles').select('*');
+    
+    if (!req.user || !req.user.is_admin) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (!profiles) {
+        return res.status(404).json({ message: 'No profiles found' });
+    }
     if (error) {
         return res.status(500).json({ message: 'Internal server error' });
     }

@@ -289,7 +289,7 @@
         let wsConnected = false;
         let pendingReady = false;
 
-        // Éléments DOM
+        // DOM
         const gameArea = document.getElementById('game-area');
         const instructionText = document.getElementById('instruction-text');
         const roundInfo = document.getElementById('round-info');
@@ -310,10 +310,9 @@
                 if (SERVER_CONFIG && SERVER_CONFIG.wsReflexUrl) {
                     WS_URL = SERVER_CONFIG.wsReflexUrl;
                 }
-                console.log('Configuration serveur récupérée:', SERVER_CONFIG);
                 return true;
             } catch (error) {
-                console.error('Erreur lors de la récupération de la configuration:', error);
+                console.error('Failed to fetch server config:', error);
                 // fallback to a sensible default using page protocol and hostname
                 const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
                 // Use hostname to allow flexible deployments; keep explicit host as last-resort
@@ -405,7 +404,7 @@
 
         // --- Message Handling ---
         function handleMessage(data) {
-            console.log('Message reçu:', data);
+            console.log('Send message:', data);
 
             switch (data.type) {
                 case 'CONNECTED':
@@ -478,10 +477,11 @@
                     const playerScore = player ? player.score : 0;
                     sendScoresToAPI(playerScore, playerNameId)
                         .then(response => {
-                            console.log('Score envoyé avec succès à l\'API:', response);
+                            console.log('Score sent successfully to API:', response);
+
                         })
                         .catch(error => {
-                            console.error('Erreur lors de l\'envoi du score à l\'API:', error);
+                            console.error('Error sending score to API:', error);
                         });
                     break;
 
@@ -557,7 +557,7 @@
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: 'CLICK' }));
                 } else {
-                    showResult("Connexion perdue, impossible d'envoyer le clic", false);
+                    showResult("Connection lost, unable to send click", false);
                 }
             }
         });
@@ -565,7 +565,6 @@
         document.getElementById('btn-logout').onclick = logout;
 
         function logout() {
-            // Supprimer les cookies
             document.cookie = "sb-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "user-name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             if (ws) {
@@ -580,12 +579,10 @@
 
 
             if (!tokenCookie) {
-                console.log("Pas de token, redirection vers login");
                 window.location.href = '/login';
                 return;
             }
 
-            // Lecture du nom depuis le cookie 'user-name'
             const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
             const userIdCookie = document.cookie.split('; ').find(row => row.startsWith('user-id='));
             if (nameCookie) {

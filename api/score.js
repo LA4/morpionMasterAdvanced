@@ -120,9 +120,12 @@ scoreRouter.get('/scoreByUserId', async (req, res) => {
      *                     error:
      *                       type: string
      *                       example: Database error message.
-         */
+     */
     const { uid } = req.body.user_id;
     const { data, error } = await supabase.from("scores").select("*").eq("user_id", uid);
+    if (!uid) {
+        return res.status(400).json({ error: "Missing user ID" });
+    }
     if (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -204,70 +207,70 @@ scoreRouter.get('/scoreByDate', async (req, res) => {
     res.status(200).json(data);
 })
 scoreRouter.post("/", async (req, res) => {
-    /** 
-    * @swagger
-    * /api/v1/scores:
-    *   post:
-    *     summary: Create a new score
-    *     tags: [Scores]
-    *     requestBody:
-    *       required: true
-    *       content:
-    *         application/json:
-    *           schema:
-    *             type: object
-    *             required:
-    *               - userID
-    *               - value
-    *             properties:
-    *               userID:
-    *                 type: string
-    *                 description: The name of the player.
-    *               value:
-    *                 type: integer
-    *                 description: The score value.
-    *     responses:
-    *       201:
-    *         description: Score created successfully.
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 id:
-    *                   type: integer
-    *                   description: The score ID.
-    *                 userID:
-    *                   type: string
-    *                   description: The name of the player.
-    *                 value:
-    *                   type: integer
-    *                   description: The score value.
-    *                 created_at:
-    *                   type: string
-    *                   format: date-time
-    *                   description: The date and time the score was created.
-    *       400:
-    *         description: Bad request, missing userID or value.
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 error:
-    *                   type: string
-    *                   example: Missing player or value
-    *       500:
-    *         description: Server error.
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 error:
-    *                   type: string
-    *                   example: Database error message.
-    */
+    /**
+     * @swagger
+     * /api/v1/scores:
+     *   post:
+     *     summary: Create a new score
+     *     tags: [Scores]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - userID
+     *               - value
+     *             properties:
+     *               userID:
+     *                 type: string
+     *                 description: The name of the player
+     *               value:
+     *                 type: integer
+     *                 description: The score value
+     *     responses:
+     *       201:
+     *         description: Score created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 id:
+     *                   type: integer
+     *                   description: The score ID
+     *                 userID:
+     *                   type: string
+     *                   description: The name of the player
+     *                 value:
+     *                   type: integer
+     *                   description: The score value
+     *                 created_at:
+     *                   type: string
+     *                   format: date-time
+     *                   description: The date and time the score was created
+     *       400:
+     *         description: Bad request, missing userID or value
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   example: "Missing player or value"
+     *       500:
+     *         description: Server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   example: "Database error message"
+     */
 
     const { userID, value } = req.body;
 
@@ -283,4 +286,5 @@ scoreRouter.post("/", async (req, res) => {
 
     res.status(201).json(data);
 })
+
 export default scoreRouter;

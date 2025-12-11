@@ -14,19 +14,19 @@ router.get('/login/google', async (req, res) => {
      * @swagger
      * /auth/v1/login/google:
      *   get:
-     *     summary: Initie l'authentification OAuth Google via Supabase
+     *     summary: Initiate Google OAuth authentication via Supabase
      *     tags:
      *       - Auth
      *     responses:
      *       302:
-     *         description: Redirection vers l'URL d'authentification Google
+     *         description: Redirect to Google authentication URL
      *         headers:
      *           Location:
-     *             description: URL de redirection vers le fournisseur OAuth (Google)
+     *             description: Redirect URL to OAuth provider (Google)
      *             schema:
      *               type: string
      *       400:
-     *         description: Erreur lors de la tentative d'authentification
+     *         description: Error during authentication attempt
      *         content:
      *           application/json:
      *             schema:
@@ -34,12 +34,10 @@ router.get('/login/google', async (req, res) => {
      *               properties:
      *                 error:
      *                   type: string
+     *                   example: "Authentication failed"
      */
 
-    // Utiliser l'hôte du serveur actuel pour la redirection
     const callbackUrl = `http://${HOST}:${PORT}/auth/v1/callback`;
-
-    console.log(`🔐 Tentative de connexion OAuth - Callback URL: ${callbackUrl}`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -53,7 +51,6 @@ router.get('/login/google', async (req, res) => {
     });
 
     if (error) {
-        console.error('❌ Erreur OAuth:', error.message);
         return res.status(400).json({ error: error.message });
     }
 
@@ -63,24 +60,21 @@ router.get('/login/google', async (req, res) => {
 router.get('/callback', async (req, res) => {
     const { code } = req.query;
     if (!code) {
-        return res.status(400).json({ error: "Aucun code fourni" });
+        return res.status(400).json({ error: "No code" });
     }
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-        console.error('❌ Erreur lors de l\'échange du code:', error.message);
         return res.redirect('/login?error=auth_failed');
     }
 
     const { access_token } = data.session;
-console.log(data.session);
     res.cookie('sb-access-token', access_token, {
         secure: false,
         maxAge: 3600000,
     });
 
-    // Ajout du nom d'utilisateur dans un cookie simple pour lecture front
     const userName = data.session.user.user_metadata.full_name || data.session.user.email;
     res.cookie('user-name', userName, {
         secure: false,
@@ -90,14 +84,12 @@ console.log(data.session);
         secure: false,
         maxAge: 3600000,
     });
-    console.log(`✅ Connexion réussie pour: ${userName}`);
 
     return res.redirect(`http://${HOST}:${PORT}/`);
 });
 
 router.get('/logout', async (req, res) => {
     await supabase.auth.signOut();
-    console.log('👋 Déconnexion utilisateur');
     res.redirect(`http://${HOST}:${PORT}/login`);
 });
 
