@@ -1,5 +1,5 @@
 import express from 'express';
-import { specs, swaggerUi } from "./swagger.js";
+import {specs, swaggerUi} from "./swagger.js";
 import authRouter from "./auth/auth.js";
 import userRouter from "./api/user.js";
 import adminRouter from "./api/admin.js";
@@ -10,13 +10,13 @@ import { authMiddleware } from "./middelware/authMiddelware.js";
 import { adminMiddleware } from "./middelware/adminMiddleware.js";
 import { getLocalIP, displayServerInfo } from "./utils/networkUtils.js";
 import * as dotenv from 'dotenv';
+import {startReflexServer} from "./websocket/reflexServer.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const WS_PORT_REFLEX = process.env.WS_PORT_REFLEX || 8081;
-const WS_PORT_MORPION = process.env.WS_PORT_MORPION || 8080;
 const HOST = process.env.HOST || getLocalIP();
 const version = "v1";
 
@@ -30,7 +30,6 @@ app.use((req, res, next) => {
     res.locals.serverHost = HOST;
     res.locals.serverPort = PORT;
     res.locals.wsPortReflex = WS_PORT_REFLEX;
-    res.locals.wsPortMorpion = WS_PORT_MORPION;
     next();
 });
 
@@ -40,10 +39,8 @@ app.get('/api/config', (req, res) => {
         host: HOST,
         port: PORT,
         wsPortReflex: WS_PORT_REFLEX,
-        wsPortMorpion: WS_PORT_MORPION,
         httpUrl: `http://${HOST}:${PORT}`,
         wsReflexUrl: `ws://${HOST}:${WS_PORT_REFLEX}`,
-        wsMorpionUrl: `ws://${HOST}:${WS_PORT_MORPION}`
     });
 });
 
@@ -60,25 +57,19 @@ app.get('/', (req, res) => {
     if (!token) {
         return res.redirect('/login');
     }
-    res.sendFile('index.html', { root: 'public' });
+    res.sendFile('index.html', {root: 'public'});
 });
 app.get('/login', (req, res) => {
-    res.sendFile('auth.html', { root: 'public' });
+    res.sendFile('auth.html', {root: 'public'});
 });
-app.get('/test', (req, res) => {
-    res.sendFile('test.html', { root: 'public' });
-});
-
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 
 // Démarrage du serveur si ce fichier est le point d'entrée principal (pas importé par Vercel)
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
-        displayServerInfo(PORT, WS_PORT_REFLEX, WS_PORT_MORPION, HOST);
-    });
-}
+app.listen(PORT, () => {
+    displayServerInfo(PORT, WS_PORT_REFLEX, HOST);
+    startReflexServer(WS_PORT_REFLEX, HOST);
+});
 
 export default app;
-

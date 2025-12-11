@@ -266,7 +266,7 @@
         <div id="game-area">
             <div id="round-info">En attente des joueurs...</div>
             <div id="instruction-text">Cliquez sur "Prêt" pour commencer</div>
-            <button id="btn-ready">PRÊT !</button>
+            <button id="btn-ready" disabled>PRÊT !</button>
             <div id="result-message" class="hidden"></div>
         </div>
 
@@ -276,16 +276,16 @@
             <button id="btn-play-again" onclick="location.reload()">Rejouer</button>
         </div>
     </div>
-
     <script>
-        // Configuration dynamique - sera récupérée du serveur
-        let WS_URL = null;
+        // Configuration variables (deduplicated)
         let SERVER_CONFIG = null;
-
-        let ws = null;
+        let WS_URL = null; // will be set by fetchServerConfig() or fallback
+        let ws = null;     // single websocket variable (deduplicated)
         let playerName = '';
         let gameActive = false;
         let canClick = false;
+        let wsConnected = false;
+        let pendingReady = false;
 
         // Éléments DOM
         const gameArea = document.getElementById('game-area');
@@ -299,56 +299,105 @@
         const ranking = document.getElementById('ranking');
         const rankingList = document.getElementById('ranking-list');
 
-        // --- Configuration du serveur ---
+        // --- Server config fetch ---
         async function fetchServerConfig() {
             try {
                 const response = await fetch('/api/config');
                 SERVER_CONFIG = await response.json();
-                WS_URL = SERVER_CONFIG.wsReflexUrl;
+                // set WS_URL from server config if provided
+                if (SERVER_CONFIG && SERVER_CONFIG.wsReflexUrl) {
+                    WS_URL = SERVER_CONFIG.wsReflexUrl;
+                }
                 console.log('Configuration serveur récupérée:', SERVER_CONFIG);
                 return true;
             } catch (error) {
                 console.error('Erreur lors de la récupération de la configuration:', error);
-                // Fallback en cas d'erreur
-                WS_URL = `ws://${window.location.hostname}:8081`;
+                // fallback to a sensible default using page protocol and hostname
+                const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+                // Use hostname to allow flexible deployments; keep explicit host as last-resort
+                WS_URL = `${proto}://${window.location.hostname}:8081`;
+                console.warn('Falling back to default WS URL:', WS_URL);
                 return false;
             }
         }
 
-        // --- WebSocket Connection ---
+        // --- Constants for fallback / debugging ---
+        const DEFAULT_EXPLICIT_HOST = '10.15.2.246';
+        const DEFAULT_EXPLICIT_PORT = 8081;
+
+        // --- Connect WebSocket (uses WS_URL set by init) ---
         function connectWebSocket() {
+            // Ensure WS_URL exists; if not, build a fallback using explicit host
             if (!WS_URL) {
-                console.error('URL WebSocket non définie. Configuration non chargée.');
+                const proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+                WS_URL = `${proto}://${DEFAULT_EXPLICIT_HOST}:${DEFAULT_EXPLICIT_PORT}/`;
+                console.warn('WS_URL was not set by config, using explicit fallback:', WS_URL);
+            }
+
+            // Avoid creating a new socket while one is connecting/open
+            if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+                console.log('WS already connecting/open, state=', ws.readyState);
                 return;
             }
 
+            console.log('Attempting WebSocket connection to', WS_URL);
             ws = new WebSocket(WS_URL);
 
             ws.onopen = () => {
+                console.log('WS opened (readyState=', ws.readyState, ')');
+                wsConnected = true;
+                // reset UI state
                 connectionStatus.innerText = 'Connecté';
                 connectionStatus.style.color = 'green';
+                btnReady.disabled = false;
+                btnReady.textContent = 'PRÊT !';
 
-                // Rejoindre la partie
+                // announce join to server
                 ws.send(JSON.stringify({
                     type: 'JOIN',
-                    playerName: playerName
+                    playerName: playerName,
+                    playerId: playerNameId
                 }));
+
+                if (pendingReady) {
+                    pendingReady = false;
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'READY' }));
+                        btnReady.disabled = true;
+                        btnReady.textContent = 'En attente...';
+                        instructionText.textContent = 'En attente des autres joueurs...';
+                    }
+                }
             };
 
             ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleMessage(data);
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    console.error('Invalid WS message', e);
+                }
             };
 
-            ws.onclose = () => {
+            ws.onclose = (ev) => {
+                console.warn('WS closed', ev);
+                wsConnected = false;
                 connectionStatus.innerText = 'Déconnecté';
                 connectionStatus.style.color = 'red';
+                btnReady.disabled = true;
+
+                // reconnect with backoff
+                let retryDelay = 1000;
+                setTimeout(() => {
+                    console.log('Retry WS connexion...');
+                    connectWebSocket();
+                }, retryDelay);
             };
 
             ws.onerror = (err) => {
-                console.error("Erreur WS:", err);
-                connectionStatus.innerText = 'Erreur';
-                connectionStatus.style.color = 'red';
+                console.error('WS error:', err);
+                // close socket to trigger onclose and retry logic
+                try { ws.close(); } catch (e) { /* ignore */ }
             };
         }
 
@@ -369,7 +418,8 @@
                     break;
 
                 case 'PLAYER_JOINED':
-                    instructionText.textContent = `${data.payload.playerName} a rejoint ! (${data.payload.playerCount} joueur(s))`;
+                    instructionText.textContent =
+                        `${data.payload.playerName} a rejoint ! (${data.payload.playerCount} joueur(s))`;
                     break;
 
                 case 'PLAYER_LEFT':
@@ -478,15 +528,26 @@
 
         // --- Event Listeners ---
         btnReady.addEventListener('click', () => {
-            ws.send(JSON.stringify({ type: 'READY' }));
-            btnReady.disabled = true;
-            btnReady.textContent = 'En attente...';
-            instructionText.textContent = 'En attente des autres joueurs...';
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'READY' }));
+                btnReady.disabled = true;
+                btnReady.textContent = 'En attente...';
+                instructionText.textContent = 'En attente des autres joueurs...';
+            } else {
+                pendingReady = true;
+                btnReady.disabled = true;
+                btnReady.textContent = 'Connexion...';
+                instructionText.textContent = 'Connexion en cours, envoi du statut PRÊT après connexion.';
+            }
         });
 
         gameArea.addEventListener('click', () => {
             if (canClick && gameActive) {
-                ws.send(JSON.stringify({ type: 'CLICK' }));
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'CLICK' }));
+                } else {
+                    showResult("Connexion perdue, impossible d'envoyer le clic", false);
+                }
             }
         });
 
@@ -506,6 +567,7 @@
         function getUserInfo() {
             const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
 
+
             if (!tokenCookie) {
                 console.log("Pas de token, redirection vers login");
                 window.location.href = '/login';
@@ -514,9 +576,10 @@
 
             // Lecture du nom depuis le cookie 'user-name'
             const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
-
+            const userIdCookie = document.cookie.split('; ').find(row => row.startsWith('user-id='));
             if (nameCookie) {
                 playerName = decodeURIComponent(nameCookie.split('=')[1]);
+                playerNameId = decodeURIComponent(userIdCookie.split('=')[1]);
             } else {
                 playerName = 'Joueur';
             }
@@ -527,12 +590,13 @@
         // --- Init ---
         async function init() {
             getUserInfo();
-            await fetchServerConfig();
+            await fetchServerConfig(); // sets WS_URL or fallback
             connectWebSocket();
         }
 
         init();
 
     </script>
+
 </body>
 </html>

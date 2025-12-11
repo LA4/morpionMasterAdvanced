@@ -74,7 +74,7 @@ router.get('/callback', async (req, res) => {
     }
 
     const { access_token } = data.session;
-
+console.log(data.session);
     res.cookie('sb-access-token', access_token, {
         secure: false,
         maxAge: 3600000,
@@ -86,7 +86,10 @@ router.get('/callback', async (req, res) => {
         secure: false,
         maxAge: 3600000
     });
-
+    res.cookie('user-id', data.session.user.id ,{
+        secure: false,
+        maxAge: 3600000,
+    });
     console.log(`✅ Connexion réussie pour: ${userName}`);
 
     return res.redirect(`http://${HOST}:${PORT}/`);
