@@ -1,12 +1,12 @@
 import express from 'express';
-import { specs, swaggerUi } from "./swagger.js";
+import {specs, swaggerUi} from "./swagger.js";
 import authRouter from "./auth/auth.js";
 import userRouter from "./api/user.js";
 import scoreRouter from "./api/score.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { authMiddleware } from "./middelware/authMiddelware.js";
-import { getLocalIP, displayServerInfo } from "./utils/networkUtils.js";
+import {authMiddleware} from "./middelware/authMiddelware.js";
+import {displayServerInfo, getLocalIP} from "./utils/networkUtils.js";
 import * as dotenv from 'dotenv';
 import {startReflexServer} from "./websocket/reflexServer.js";
 
@@ -50,22 +50,22 @@ app.use(`/api/${version}/score`, scoreRouter)
 app.get('/', (req, res) => {
     // Vérifier si l'utilisateur a un token
     const token = req.cookies['sb-access-token'];
-    // if (!token) {
-    //     return res.redirect('/login');
-    // }
-    res.sendFile('index.html', { root: 'public' });
+    if (!token) {
+        return res.redirect('/login');
+    }
+    res.sendFile('index.html', {root: 'public'});
 });
 app.get('/login', (req, res) => {
-    res.sendFile('auth.html', { root: 'public' });
+    res.sendFile('auth.html', {root: 'public'});
 });
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 
 // Démarrage du serveur si ce fichier est le point d'entrée principal (pas importé par Vercel)
-    app.listen(PORT, () => {
-        displayServerInfo(PORT, WS_PORT_REFLEX, HOST);
-        startReflexServer(WS_PORT_REFLEX, HOST);
-    });
+app.listen(PORT, () => {
+    displayServerInfo(PORT, WS_PORT_REFLEX, HOST);
+    startReflexServer(WS_PORT_REFLEX, HOST);
+});
 
 export default app;

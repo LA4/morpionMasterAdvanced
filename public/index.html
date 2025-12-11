@@ -355,7 +355,8 @@
                 // announce join to server
                 ws.send(JSON.stringify({
                     type: 'JOIN',
-                    playerName: playerName
+                    playerName: playerName,
+                    playerId: playerNameId
                 }));
 
                 if (pendingReady) {
@@ -417,7 +418,8 @@
                     break;
 
                 case 'PLAYER_JOINED':
-                    instructionText.textContent = `${data.payload.playerName} a rejoint ! (${data.payload.playerCount} joueur(s))`;
+                    instructionText.textContent =
+                        `${data.payload.playerName} a rejoint ! (${data.payload.playerCount} joueur(s))`;
                     break;
 
                 case 'PLAYER_LEFT':
@@ -565,17 +567,19 @@
         function getUserInfo() {
             const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
 
+
             if (!tokenCookie) {
                 console.log("Pas de token, redirection vers login");
-                // window.location.href = '/login';
+                window.location.href = '/login';
                 return;
             }
 
             // Lecture du nom depuis le cookie 'user-name'
             const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
-
+            const userIdCookie = document.cookie.split('; ').find(row => row.startsWith('user-id='));
             if (nameCookie) {
                 playerName = decodeURIComponent(nameCookie.split('=')[1]);
+                playerNameId = decodeURIComponent(userIdCookie.split('=')[1]);
             } else {
                 playerName = 'Joueur';
             }

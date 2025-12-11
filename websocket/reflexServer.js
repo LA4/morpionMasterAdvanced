@@ -39,7 +39,8 @@ export function startReflexServer(port, host) {
     const playerList = gameState.players.map(p => ({
       name: p.name,
       score: p.score,
-      ready: p.ready
+      ready: p.ready,
+      id: p.id
     }));
 
     broadcast({
@@ -101,7 +102,7 @@ export function startReflexServer(port, host) {
     }, waitTime);
   }
 
-  function endGame() {
+  async function endGame() {
     gameState.gameActive = false;
     const ranking = gameState.players
         .sort((a, b) => b.score - a.score)
@@ -109,10 +110,19 @@ export function startReflexServer(port, host) {
           rank: index + 1,
           name: p.name,
           score: p.score
-        }));
+                  }
+                  ));
+    for (const p of gameState.players) {
+      try {
+        // await sendScoresToAPI(p.);
+      } catch (err) {
+        console.error('Erreur en envoyant les scores à l\'API:', err);
+      }
+    }
 
-    broadcast({ type: 'GAME_END', payload: { ranking } });
+    broadcast({type: 'GAME_END', payload: {ranking}});
 
+    // Réinitialisation de l'état du jeu
     currentRound = 0;
     gameState.players.forEach(p => {
       p.score = 0;
@@ -222,4 +232,20 @@ export function startReflexServer(port, host) {
       }
     });
   });
+}
+async function sendScoresToAPI(ranking) {
+  const API_URL = process.env.SCORE_API_URL || 'http://localhost:3000/api/scores';
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game: 'reflex-shot', ranking })
+    });
+    if (!res.ok) {
+      throw new Error(`API responded with status ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
 }
