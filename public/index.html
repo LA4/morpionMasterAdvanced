@@ -278,6 +278,8 @@
     </div>
     <script>
         // Configuration variables (deduplicated)
+
+
         let SERVER_CONFIG = null;
         let WS_URL = null; // will be set by fetchServerConfig() or fallback
         let ws = null;     // single websocket variable (deduplicated)
@@ -472,6 +474,15 @@
 
                 case 'GAME_END':
                     showFinalRanking(data.payload.ranking);
+                    const player = data.payload.ranking.find(p => p.name === playerName);
+                    const playerScore = player ? player.score : 0;
+                    sendScoresToAPI(playerScore, playerNameId)
+                        .then(response => {
+                            console.log('Score envoyé avec succès à l\'API:', response);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de l\'envoi du score à l\'API:', error);
+                        });
                     break;
 
                 case 'GAME_CANCELLED':
@@ -595,7 +606,25 @@
         }
 
         init();
-
+        async function sendScoresToAPI(ranking, playerNameId) {
+            const API_URL = `http://${DEFAULT_EXPLICIT_HOST}:3000/api/v1/scores`;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        "userID": playerNameId,
+                        "value": ranking
+                    })
+                });
+                if (!res.ok) {
+                    throw new Error(`API responded with status ${res.status}`);
+                }
+                return await res.json();
+            } catch (err) {
+                throw err;
+            }
+        }
     </script>
 
 </body>
