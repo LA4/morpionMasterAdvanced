@@ -69,9 +69,12 @@ app.get('/test', (req, res) => {
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 
-app.listen(PORT, () => {
-    displayServerInfo(PORT, WS_PORT_REFLEX, WS_PORT_MORPION, HOST);
-});
+// Démarrage du serveur si ce fichier est le point d'entrée principal (pas importé par Vercel)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        displayServerInfo(PORT, WS_PORT_REFLEX, WS_PORT_MORPION, HOST);
+    });
+}
 
 export default app;
 
