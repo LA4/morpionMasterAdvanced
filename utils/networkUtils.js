@@ -25,10 +25,9 @@ export function getLocalIP() {
  * Affiche les informations de configuration du serveur
  * @param {number} port - Port HTTP
  * @param {number} wsPortReflex - Port WebSocket Reflex
- * @param {number} wsPortMorpion - Port WebSocket Morpion
  * @param {string} host - Adresse IP de l'hôte
  */
-export function displayServerInfo(port, wsPortReflex, wsPortMorpion, host) {
+export function displayServerInfo(port, wsPortReflex, host) {
     console.log('\n╔════════════════════════════════════════════════════════════╗');
     console.log('║           🎯 REFLEX SHOT - SERVEUR DÉMARRÉ 🎯            ║');
     console.log('╚════════════════════════════════════════════════════════════╝\n');
@@ -39,7 +38,6 @@ export function displayServerInfo(port, wsPortReflex, wsPortMorpion, host) {
     console.log('🔌 PORTS ACTIFS :');
     console.log(`   ├─ HTTP/API    : ${port}`);
     console.log(`   ├─ WS Reflex   : ${wsPortReflex}`);
-    console.log(`   └─ WS Morpion  : ${wsPortMorpion}\n`);
 
     console.log('🌐 ACCÈS AU JEU :');
     console.log(`   👉 http://${host}:${port}\n`);
@@ -80,4 +78,4 @@ export function displayWebSocketInfo(port, type, host) {
     console.log('✅ En attente de connexions des joueurs...\n');
     console.log('═══════════════════════════════════════════════════════════════\n');
 }
-
+ 

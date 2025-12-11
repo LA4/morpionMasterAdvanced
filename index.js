@@ -50,9 +50,9 @@ app.use(`/api/${version}/score`, scoreRouter)
 app.get('/', (req, res) => {
     // Vérifier si l'utilisateur a un token
     const token = req.cookies['sb-access-token'];
-    if (!token) {
-        return res.redirect('/login');
-    }
+    // if (!token) {
+    //     return res.redirect('/login');
+    // }
     res.sendFile('index.html', { root: 'public' });
 });
 app.get('/login', (req, res) => {
