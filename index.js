@@ -20,7 +20,17 @@ app.use(`/api/${version}/user`, authMiddleware, userRouter)
 app.use(`/api/${version}/score`, scoreRouter)
 
 
+app.get('/', (req, res) => {
+    res.sendFile('index.html', { root: 'public' });
+});
+app.get('/login', (req, res) => {
+    res.sendFile('auth.html', { root: 'public' });
+});
+
+
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 export default app;
+

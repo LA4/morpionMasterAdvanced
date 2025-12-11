@@ -33,7 +33,7 @@ router.get('/login/google', async (req, res) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `http://localhost:3000/auth/v1/callback`
+            redirectTo: `http://10.15.2.246:3000/auth/v1/callback`
         }, queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -60,16 +60,23 @@ router.get('/callback', async (req, res) => {
     const { access_token } = data.session;
 
     res.cookie('sb-access-token', access_token, {
-        httpOnly: true,    // Empêche le vol de token par JS (XSS)
-        secure: false,     // Mettre 'true' si tu es en HTTPS (Production)
-        maxAge: 3600000    // Durée de vie (1 heure ici)
+        secure: false,
+        maxAge: 3600000,
     });
-    return res.redirect('/api/v1/user/me');
+
+    // // Ajout du nom d'utilisateur dans un cookie simple pour lecture front
+    const userName = data.session.user.user_metadata.full_name || data.session.user.email;
+    res.cookie('user-name', userName, {
+        secure: false,
+        maxAge: 3600000
+    });
+
+    return res.redirect('http://10.15.2.246:3000/');
 });
 
 router.get('/logout', async (req, res) => {
     await supabase.auth.signOut();
-    res.redirect('/login');
+    res.redirect('http://10.15.2.246:3000/login');
 });
 
 export default router;

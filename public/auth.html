@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion - Le Réflexe Flash</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-card" class="card">
+        <h2>Le Réflexe Flash</h2>
+        <p>Connectez-vous pour défier votre temps de réaction !</p>
+        <button id="btn-login">Se connecter avec Google</button>
+    </div>
+
+    <script>
+        const API_URL = "http://10.15.2.246:3000"; 
+        
+        // Check if already logged in
+        const token = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
+        if (token) {
+            window.location.href = '/';
+        }
+
+        document.getElementById('btn-login').onclick = () => {
+            window.location.href = `${API_URL}/auth/v1/login/google`;
+        };
+    </script>
+</body>
+</html>

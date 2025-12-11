@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Le Réflexe Flash</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-area">
+        <div id="instruction-text" style="font-size: 1.5em; text-align: center; margin-bottom: 20px;">En attente du cycle de jeu...</div>
+        <div id="player-name-display" class="player-info"></div>
+    </div>
+
+    <div id="profile-card" class="card ">
+        <h3 id="welcome-message">Bienvenue, Joueur !</h3>
+        <p>Statut du jeu : <span id="connection-status" style="color:orange;">Connexion WS...</span></p>
+        <button id="btn-logout" style="background: #ccc; color: #333;">Déconnexion</button>
+    </div>
+
+    <script>
+        const API_URL = "http://10.15.2.246:3000";
+
+        let ws = null;
+
+        // Éléments DOM
+        const gameArea = document.getElementById('game-area');
+        const profileCard = document.getElementById('profile-card');
+        const instructionText = document.getElementById('instruction-text');
+        const statusMessage = document.getElementById('status-message');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const connectionStatus = document.getElementById('connection-status');
+
+        // --- 2. Logique WebSocket Native (ws) ---
+
+        function connectWebSocket() {
+            // ws = new WebSocket(`ws://localhost:8080/?token=${accessToken}`);
+             ws = new WebSocket(`ws://10.15.2.246:8080`);
+
+            ws.onopen = () => {
+                connectionStatus.innerText = 'Connecté';
+                connectionStatus.style.color = 'green';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'GAME_STATUS') {
+                    handleGameStatus(data.payload);
+                } else if (data.type === 'RESULT') {
+                    handleResult(data.payload);
+                }
+            };
+
+            ws.onclose = () => {
+                connectionStatus.innerText = 'Déconnecté';
+                connectionStatus.style.color = 'red';
+                // En production, il faudrait ajouter une logique de reconnexion ici
+                // ws.close();
+            };
+
+            ws.onerror = (err) => {
+                console.error("Erreur WS:", err);
+                connectionStatus.innerText = 'Erreur';
+            };
+        }
+
+
+        function handleGameStatus(status) {
+            gameArea.classList.remove('color-red', 'color-green');
+            statusMessage.classList.add('hidden');
+
+            if (status === 'red') {
+                gameArea.classList.add('color-red');
+                instructionText.innerText = 'En attente du signal vert...';
+                gameArea.onclick = null; // Désactive le clic
+            } else if (status === 'green') {
+                gameArea.classList.add('color-green');
+                instructionText.innerText = 'CLIQUEZ MAINTENANT !';
+                gameArea.onclick = sendClick; // Active le clic
+            }
+        }
+
+        function sendClick() {
+            if (ws && ws.readyState === ws.OPEN) {
+                // Envoi du signal de clic au serveur
+                ws.send(JSON.stringify({ type: 'PLAYER_CLICK' }));
+
+                // Désactive le clic immédiatement après le premier envoi
+                gameArea.onclick = null; 
+            }
+        }
+
+        function handleResult(message) {
+            statusMessage.classList.remove('hidden');
+            statusMessage.innerText = message;
+            instructionText.innerText = 'Résultat reçu.';
+        }
+
+        // --- 4. Boutons ---
+
+        document.getElementById('btn-logout').onclick = logout;
+
+        function logout() {
+            // Supprimer le cookie
+            document.cookie = "sb-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            if (ws) {
+                ws.close();
+            }
+            window.location.href = '/login';
+        }
+
+        // --- 1. Gestion Utilisateur ---
+        
+        async function getUserInfo() {
+            const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
+console.log(tokenCookie);
+            if (!tokenCookie) {
+                 console.log("Pas de token, mode anonyme ou non connecté");
+                 return;
+            }
+
+            // Lecture du nom depuis le cookie 'user-name'
+            const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
+            let playerName = 'Joueur';
+            
+            if (nameCookie) {
+                playerName = decodeURIComponent(nameCookie.split('=')[1]);
+            }
+
+            welcomeMessage.innerText = `Bienvenue, ${playerName} !`;
+            const nameDisplay = document.getElementById('player-name-display');
+            if(nameDisplay) {
+                nameDisplay.innerText = playerName;
+            }
+        }
+
+        getUserInfo();
+        connectWebSocket();
+
+    </script>
+</body>
+</html>
