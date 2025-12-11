@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient.js";
 const scoreRouter = express.Router();
 
 scoreRouter.get("/", async (req, res) => {
+    console.log("📢 Requête reçue: GET /api/v1/scores");
     /** 
     * @swagger
     * /api/v1/scores:
@@ -26,7 +27,7 @@ scoreRouter.get("/", async (req, res) => {
     *                   player_name:
     *                     type: string
     *                     description: The name of the player.
-    *                   score_value:
+    *                   value:
     *                     type: integer
     *                     description: The score value.
     *                   created_at:
@@ -44,17 +45,34 @@ scoreRouter.get("/", async (req, res) => {
     *                   type: string
     *                   example: Database error message.
     */
-    const { data, error } = await supabase.from("scores").select("*");
+
+    const response = await supabase.from("scores").select("*");
+    const { data, error } = response;
+    console.log("Requête Supabase exécutée avec succès.", response);
+
+    console.log("Requête Supabase - Data:", data);
+    console.log("Requête Supabase - Error:", error);
 
     if (error) {
         return res.status(500).json({ error: error.message });
     }
-    console.log(data, data.length);
-    if (!data || data.length === 0) {
-        return res.status(200).json({ message: "No data found", result: [] });
-    }
 
-    res.status(200).json({ message: "Data found", result: data });
+console.log("Nombre de scores:", data ? data.length : 0);
+
+res.status(200).json(data);
+
+
+    // const { data, error } = await supabase.from("scores").select("*");
+    //  console.log(data, data.length);
+    // if (error) {
+    //     return res.status(500).json({ error: error.message });
+    // }
+   
+    // if (!data || data.length === 0) {
+    //     return res.status(200).json({ message: "No data found", result: [] });
+    // }
+
+    // res.status(200).json({ message: "Data found", result: data });
 });
 scoreRouter.get('/scoreByUserId', async (req, res) => {
     /**
@@ -86,10 +104,10 @@ scoreRouter.get('/scoreByUserId', async (req, res) => {
      *                         type: string
      *                         format: uuid
      *                         description: The unique ID of the score entry.
-     *                       display_name:
+     *                       userID:
      *                         type: string
      *                         description: The display name of the player.
-     *                       score_value:
+     *                       value:
      *                         type: integer
      *                         description: The value of the score.
      *                       user_id:
@@ -158,10 +176,10 @@ scoreRouter.get('/scoreByDate   ', async (req, res) => {
      *                         type: string
      *                         format: uuid
      *                         description: The unique ID of the score entry.
-     *                       display_name:
+     *                       userID:
      *                         type: string
      *                         description: The display name of the player.
-     *                       score_value:
+     *                       value:
      *                         type: integer
      *                         description: The value of the score.
      *                       user_id:
@@ -217,13 +235,13 @@ scoreRouter.post("/", async (req, res) => {
     *           schema:
     *             type: object
     *             required:
-    *               - display_name
-    *               - score_value
+    *               - userID
+    *               - value
     *             properties:
-    *               display_name:
+    *               userID:
     *                 type: string
     *                 description: The name of the player.
-    *               score_value:
+    *               value:
     *                 type: integer
     *                 description: The score value.
     *     responses:
@@ -237,10 +255,10 @@ scoreRouter.post("/", async (req, res) => {
     *                 id:
     *                   type: integer
     *                   description: The score ID.
-    *                 display_name:
+    *                 userID:
     *                   type: string
     *                   description: The name of the player.
-    *                 score_value:
+    *                 value:
     *                   type: integer
     *                   description: The score value.
     *                 created_at:
@@ -248,7 +266,7 @@ scoreRouter.post("/", async (req, res) => {
     *                   format: date-time
     *                   description: The date and time the score was created.
     *       400:
-    *         description: Bad request, missing display_name or score_value.
+    *         description: Bad request, missing userID or value.
     *         content:
     *           application/json:
     *             schema:
@@ -256,7 +274,7 @@ scoreRouter.post("/", async (req, res) => {
     *               properties:
     *                 error:
     *                   type: string
-    *                   example: Missing player or score_value
+    *                   example: Missing player or value
     *       500:
     *         description: Server error.
     *         content:
@@ -269,13 +287,13 @@ scoreRouter.post("/", async (req, res) => {
     *                   example: Database error message.
     */
 
-    const { display_name, score_value } = req.body;
+    const { userID, value } = req.body;
 
-    if (!display_name || !score_value) {
-        return res.status(400).json({ error: "Missing player or score_value" });
+    if (!userID || !value) {
+        return res.status(400).json({ error: "Missing player or value" });
     }
 
-    const { data, error } = await supabase.from("scores").insert({ display_name, score_value });
+    const { data, error } = await supabase.from("scores").insert({ userID, value });
 
     if (error) {
         return res.status(500).json({ error: error.message });
