@@ -5,6 +5,7 @@ import userRouter from "./api/user.js";
 import scoreRouter from "./api/score.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { authMiddleware } from "./middelware/authMiddelware.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;

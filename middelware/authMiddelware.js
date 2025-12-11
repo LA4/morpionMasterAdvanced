@@ -1,5 +1,4 @@
 import { supabase } from '../supabaseClient.js';
-
 export const requireAuth = async (req, res, next) => {
     const accessToken = req.cookies['sb-access-token'];
 
@@ -18,3 +17,4 @@ export const requireAuth = async (req, res, next) => {
 
     next();
 };
+export const authMiddleware = requireAuth;
