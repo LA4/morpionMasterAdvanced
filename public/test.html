@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Reflex Shot - Mode Local</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        h1 {
+            color: #00d9ff;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #0f3460;
+            border-radius: 10px;
+        }
+        .test-section h3 {
+            color: #00d9ff;
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #2ecc71;
+        }
+        .status.error {
+            background: #e74c3c;
+        }
+        .status.warning {
+            background: #f39c12;
+        }
+        button {
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00b8d4;
+        }
+        .log {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Reflex Shot - Mode Développeur</h1>
+
+        <div class="test-section">
+            <h3>📡 État des Serveurs</h3>
+            <div id="server-http" class="status warning">HTTP (3000): Test en cours...</div>
+            <div id="server-ws" class="status warning">WebSocket (8081): Test en cours...</div>
+            <button onclick="testServers()">Retester les serveurs</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Test Authentification</h3>
+            <div id="auth-status" class="status warning">Cookie: Vérification...</div>
+            <button onclick="testAuth()">Vérifier l'auth</button>
+            <button onclick="clearAuth()">Effacer les cookies</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎮 Test WebSocket</h3>
+            <button onclick="connectWS()">Connecter au WS</button>
+            <button onclick="sendTestMessage()">Envoyer message test</button>
+            <button onclick="disconnectWS()">Déconnecter</button>
+            <div id="ws-status" class="status warning">Non connecté</div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Logs</h3>
+            <button onclick="clearLogs()">Effacer les logs</button>
+            <div id="logs" class="log">
+                <div class="log-entry">--- Logs initialisés ---</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Actions Rapides</h3>
+            <button onclick="window.location.href='/'">Aller au jeu</button>
+            <button onclick="window.location.href='/login'">Page de connexion</button>
+            <button onclick="window.location.reload()">Recharger cette page</button>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let WS_URL = null;
+        let HTTP_URL = null;
+        let SERVER_CONFIG = null;
+
+        // Récupérer la configuration du serveur
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                SERVER_CONFIG = await response.json();
+                WS_URL = SERVER_CONFIG.wsReflexUrl;
+                HTTP_URL = SERVER_CONFIG.httpUrl;
+                log(`Configuration chargée: ${HTTP_URL}`, '#00d9ff');
+            } catch (error) {
+                // Fallback
+                HTTP_URL = `${window.location.protocol}//${window.location.host}`;
+                WS_URL = `ws://${window.location.hostname}:8081`;
+                log(`Configuration fallback: ${HTTP_URL}`, '#f39c12');
+            }
+        }
+
+        function log(message, color = 'white') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.color = color;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '<div class="log-entry">--- Logs effacés ---</div>';
+        }
+
+        async function testServers() {
+            log('Test des serveurs...', '#00d9ff');
+
+            // Test HTTP
+            try {
+                const response = await fetch(HTTP_URL + '/');
+                if (response.ok) {
+                    document.getElementById('server-http').className = 'status success';
+                    document.getElementById('server-http').textContent = 'HTTP (3000): ✅ En ligne';
+                    log('✅ Serveur HTTP OK', '#2ecc71');
+                } else {
+                    throw new Error('Response not OK');
+                }
+            } catch (e) {
+                document.getElementById('server-http').className = 'status error';
+                document.getElementById('server-http').textContent = 'HTTP (3000): ❌ Hors ligne';
+                log('❌ Serveur HTTP inaccessible: ' + e.message, '#e74c3c');
+            }
+
+            // Test WebSocket
+            try {
+                const testWs = new WebSocket(WS_URL);
+                testWs.onopen = () => {
+                    document.getElementById('server-ws').className = 'status success';
+                    document.getElementById('server-ws').textContent = 'WebSocket (8081): ✅ En ligne';
+                    log('✅ Serveur WebSocket OK', '#2ecc71');
+                    testWs.close();
+                };
+                testWs.onerror = () => {
+                    document.getElementById('server-ws').className = 'status error';
+                    document.getElementById('server-ws').textContent = 'WebSocket (8081): ❌ Hors ligne';
+                    log('❌ Serveur WebSocket inaccessible', '#e74c3c');
+                };
+            } catch (e) {
+                document.getElementById('server-ws').className = 'status error';
+                document.getElementById('server-ws').textContent = 'WebSocket (8081): ❌ Erreur';
+                log('❌ Erreur WebSocket: ' + e.message, '#e74c3c');
+            }
+        }
+
+        function testAuth() {
+            log('Test authentification...', '#00d9ff');
+
+            const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('sb-access-token='));
+            const nameCookie = document.cookie.split('; ').find(row => row.startsWith('user-name='));
+
+            if (tokenCookie) {
+                document.getElementById('auth-status').className = 'status success';
+                const userName = nameCookie ? decodeURIComponent(nameCookie.split('=')[1]) : 'Anonyme';
+                document.getElementById('auth-status').textContent = `Cookie: ✅ Connecté (${userName})`;
+                log(`✅ Authentifié: ${userName}`, '#2ecc71');
+            } else {
+                document.getElementById('auth-status').className = 'status error';
+                document.getElementById('auth-status').textContent = 'Cookie: ❌ Non connecté';
+                log('❌ Pas de token d\'authentification', '#e74c3c');
+            }
+        }
+
+        function clearAuth() {
+            document.cookie = "sb-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user-name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            log('🗑️ Cookies supprimés', '#f39c12');
+            testAuth();
+        }
+
+        function connectWS() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('⚠️ Déjà connecté au WebSocket', '#f39c12');
+                return;
+            }
+
+            log('Connexion au WebSocket...', '#00d9ff');
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                document.getElementById('ws-status').className = 'status success';
+                document.getElementById('ws-status').textContent = 'Connecté au WebSocket';
+                log('✅ WebSocket connecté', '#2ecc71');
+
+                // Envoyer JOIN
+                ws.send(JSON.stringify({
+                    type: 'JOIN',
+                    playerName: 'TestPlayer_' + Math.floor(Math.random() * 1000)
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log('📥 Message reçu: ' + JSON.stringify(data), '#00d9ff');
+            };
+
+            ws.onerror = (error) => {
+                document.getElementById('ws-status').className = 'status error';
+                document.getElementById('ws-status').textContent = 'Erreur WebSocket';
+                log('❌ Erreur WebSocket: ' + error, '#e74c3c');
+            };
+
+            ws.onclose = () => {
+                document.getElementById('ws-status').className = 'status warning';
+                document.getElementById('ws-status').textContent = 'Déconnecté';
+                log('🔌 WebSocket déconnecté', '#f39c12');
+            };
+        }
+
+        function sendTestMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('❌ WebSocket non connecté', '#e74c3c');
+                return;
+            }
+
+            const testMsg = {
+                type: 'READY',
+                playerName: 'TestPlayer'
+            };
+
+            ws.send(JSON.stringify(testMsg));
+            log('📤 Message envoyé: ' + JSON.stringify(testMsg), '#00d9ff');
+        }
+
+        function disconnectWS() {
+            if (ws) {
+                ws.close();
+                ws = null;
+                log('🔌 Déconnexion demandée', '#f39c12');
+            }
+        }
+
+        // Tests au chargement
+        window.onload = async () => {
+            log('🚀 Page de test chargée', '#2ecc71');
+            await loadConfig();
+            testServers();
+            testAuth();
+        };
+    </script>
+</body>
+</html>
+
