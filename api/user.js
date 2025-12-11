@@ -1,11 +1,10 @@
 import express from "express";
-import { supabase } from "../supabaseClient.js";
 const userRouter = express.Router();
 
 userRouter.get("/me", async (req, res) => {
     /**
      * @swagger
-     * /api/user/v1/me:
+     * /api/v1/user/me:
      *   get:
      *     summary: Get current authenticated user details
      *     tags: [Users]
@@ -38,5 +37,6 @@ userRouter.get("/me", async (req, res) => {
         email: user.email,
         name: user.user_metadata?.full_name || user.email
     });
+
 });
 export default userRouter;
