@@ -32,8 +32,8 @@ export function displayServerInfo(port, wsPortReflex, host) {
     console.log('║           🎯 REFLEX SHOT - SERVEUR DÉMARRÉ 🎯            ║');
     console.log('╚════════════════════════════════════════════════════════════╝\n');
 
-    // console.log('📡 ADRESSE IP DU SERVEUR :');
-    // console.log(`   🌐 ${host}\n`);
+     console.log('📡 ADRESSE IP DU SERVEUR :');
+    console.log(`   🌐 ${host}\n`);
 
     console.log('🔌 PORTS ACTIFS :');
     console.log(`   ├─ HTTP/API    : ${port}`);
@@ -47,15 +47,15 @@ export function displayServerInfo(port, wsPortReflex, host) {
     // console.log(`   ├─ Test  : http://${host}:${port}/test`);
     // console.log(`   └─ API   : http://${host}:${port}/docs\n`);
 
-    // console.log('⚠️  CONFIGURATION SUPABASE :');
-    // console.log('   Ajoutez cette URL de callback dans Supabase :');
-    // console.log(`   👉 http://${host}:${port}/auth/v1/callback\n`);
+     console.log('⚠️  CONFIGURATION SUPABASE :');
+     console.log('   Ajoutez cette URL de callback dans Supabase :');
+     console.log(`   👉 http://${host}:${port}/auth/v1/callback\n`);
 
-    // console.log('📋 PARTAGER AUX JOUEURS :');
-    // console.log(`   Donnez cette adresse aux autres joueurs :`);
-    // console.log(`   👉 http://${host}:${port}\n`);
+     console.log('📋 PARTAGER AUX JOUEURS :');
+     console.log(`   Donnez cette adresse aux autres joueurs :`);
+     console.log(`   👉 http://${host}:${port}\n`);
 
-    // console.log('═══════════════════════════════════════════════════════════════\n');
+    console.log('═══════════════════════════════════════════════════════════════\n');
 }
 
 /**
@@ -78,4 +78,3 @@ export function displayWebSocketInfo(port, type, host) {
     console.log('✅ En attente de connexions des joueurs...\n');
     console.log('═══════════════════════════════════════════════════════════════\n');
 }
- 

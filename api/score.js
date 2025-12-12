@@ -56,10 +56,10 @@ scoreRouter.get("/", async (req, res) => {
     res.status(200).json(data);
 });
 
-scoreRouter.get('/scoreByUserId', async (req, res) => {
+scoreRouter.get('/score_by_User_id', async (req, res) => {
     /**
      * @swagger
-     * /api/v1/scoreByUserId:
+     * /api/v1/score_by_User_id:
      *       get:
      *         summary: Get scores by user ID
      *         tags: [Scores]
@@ -131,10 +131,10 @@ scoreRouter.get('/scoreByUserId', async (req, res) => {
     }
     res.status(200).json(data);
 })
-scoreRouter.get('/scoreByDate', async (req, res) => {
+scoreRouter.get('/score_by_date', async (req, res) => {
     /**
      * @swagger
-     * /api/v1/scoreByDate:
+     * /api/v1/score_by_date:
      *       get:
      *         summary: Get scores by date
      *         tags: [Scores]
