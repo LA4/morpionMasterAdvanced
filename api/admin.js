@@ -9,8 +9,6 @@ adminRouter.get("/profiles", async (req, res) => {
      *   get:
      *     summary: Get all user profiles
      *     tags: [Admin]
-     *     security:
-     *       - bearerAuth: []
      *     responses:
      *       200:
      *         description: List of user profiles
