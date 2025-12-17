@@ -195,7 +195,7 @@ scoreRouter.get('/score_by_date', async (req, res) => {
      *                     error:
      *                       type: string
      *                       example: Database error message.
-         */
+     */
     const { date } = req.query;
     if (!date) {
         return res.status(400).json({ error: "Missing date" });

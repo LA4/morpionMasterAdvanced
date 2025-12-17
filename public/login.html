@@ -125,7 +125,6 @@
     </div>
 
     <script>
-        // Gestion des erreurs depuis l'URL
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
 
@@ -135,7 +134,6 @@
             errorDiv.classList.add('show');
         }
 
-        // Animation au clic
         document.getElementById('loginBtn').addEventListener('click', function(e) {
             this.innerHTML = '<span>🔄 Redirection en cours...</span>';
         });

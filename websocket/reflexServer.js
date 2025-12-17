@@ -1,4 +1,4 @@
-import {WebSocket, WebSocketServer} from 'ws'; // Notez l'import ES Module
+import {WebSocket, WebSocketServer} from 'ws';
 
 // global state
 let gameState = {
